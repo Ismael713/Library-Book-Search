@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Library Book Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            padding: 10px;
+            width: 70%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .search-button, .add-button, .toggle-form-button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        .toggle-form-button {
+            background-color: #2196F3;
+            display: block;
+            margin: 20px 0;
+        }
+
+        .search-button:hover {
+            background-color: #45a049;
+        }
+
+        .toggle-form-button:hover {
+            background-color: #0b7dda;
+        }
+
+        .book {
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .checked-out {
+            border-left: 6px solid red;
+        }
+
+        .available {
+            border-left: 6px solid green;
+        }
+
+        /* Rating-based background colors */
+        .rating-high {
+            background-color: #e6ffe6; /* Green for 4+ */
+        }
+
+        .rating-medium {
+            background-color: #fffbe6; /* Yellow for 3.5-3.9 */
+        }
+
+        .rating-low {
+            background-color: #ffe6e6; /* Red for <3 */
+        }
+
+        .book-h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .not-found {
+            color: white;
+            background-color: #ff3333;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .result-container {
+            margin-top: 20px;
+        }
+
+        .genre-tag {
+            display: inline-block;
+            background-color: #e0e0e0;
+            border-radius: 12px;
+            padding: 4px 10px;
+            font-size: 12px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .search-info {
+            margin-bottom: 15px;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Add Book Form */
+        .add-book-form {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none; /* Initially hidden */
+        }
+
+        .form-title {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-check {
+            margin-top: 10px;
+        }
+
+        .btn-submit {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+
+        .success-message {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📚 Library Book Search</h1>
+
+<div class="search-container">
+    <input type="text" id="searchInput" class="search-input" placeholder="Search by title, author or genre...">
+    <button id="searchButton" class="search-button">Search</button>
+</div>
+<p class="search-info">You can search by title, author, or genre</p>
+
+<button id="toggleFormButton" class="toggle-form-button">Add New Book</button>
+
+<!-- Add Book Form (inline) -->
+<div id="addBookForm" class="add-book-form">
+    <h2 class="form-title">Add New Book</h2>
+    <form id="bookForm">
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <input type="text" id="author" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="rating">Rating (1-5):</label>
+            <input type="number" id="rating" class="form-control" min="1" max="5" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="genre">Genre:</label>
+            <input type="text" id="genre" class="form-control" required>
+        </div>
+        <div class="form-check">
+            <input type="checkbox" id="checkedOut">
+            <label for="checkedOut">Checked Out</label>
+        </div>
+        <button type="submit" class="btn-submit">Add Book</button>
+    </form>
+    <div id="successMessage" class="success-message">Book added successfully!</div>
+</div>
+
+<div id="resultContainer" class="result-container"></div>
+
+<script>
+    const books = [
+        { title: "The Hobbit", author: "J.R.R. Tolkien", rating: 4.8, checkedOut: false, genre: "Fantasy" },
+        { title: "The Fellowship of the Ring", author: "J.R.R. Tolkien", rating: 4.9, checkedOut: false, genre: "Fantasy" },
+        { title: "1984", author: "George Orwell", rating: 4.2, checkedOut: true, genre: "Dystopian" },
+        { title: "Twilight", author: "Stephenie Meyer", rating: 3.7, checkedOut: true, genre: "Young Adult" },
+        { title: "Dune", author: "Frank Herbert", rating: 4.6, checkedOut: false, genre: "Science Fiction" },
+        { title: "I Robot", author: "Isaac Asimov", rating: 4.3, checkedOut: false, genre: "Science Fiction" },
+        { title: "Foundation", author: "Isaac Asimov", rating: 3.99, checkedOut: false, genre: "Science Fiction" },
+        { title: "Moby Dick", author: "Herman Melville", rating: 3.6, checkedOut: true, genre: "Classic" },
+        { title: "The Great Gatsby", author: "F. Scott Fitzgerald", rating: 3.9, checkedOut: false, genre: "Classic" },
+        { title: "Fifty Shades of Grey", author: "E.L. James", rating: 2.8, checkedOut: true, genre: "Romance" },
+        { title: "The Alchemist", author: "Paulo Coelho", rating: 4.1, checkedOut: false, genre: "Fiction" },
+        { title: "Eragon", author: "Christopher Paolini", rating: 2.5, checkedOut: false, genre: "Fantasy" },
+        { title: "The Da Vinci Code", author: "Dan Brown", rating: 3.8, checkedOut: true, genre: "Mystery" }
+    ];
+</script>
+<script src = index.js></script>
+</body>
+</html>
